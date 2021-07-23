@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html lang="en-us,zh-cn,ja-jp,default">
+
+<head>
+  
+  <title>rust-zero-copy - zephyr&#39;s blog</title>
+  <meta charset="UTF-8">
+  <meta name="description" content="zephyr&#39;s back garden, recording his daily life">
+  <meta name="keywords" content="anime, galgame, program, linux">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  
+  
+
+  <link rel="shortcut icon" href="/ico/favicon.ico" type="image/png" />
+  <meta name="description" content="Rust: impl zero-copy for tokio-tcp-stream">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust-zero-copy">
+<meta property="og:url" content="https://zephyr.moe/2021/07/23/rust-zero-copy/index.html">
+<meta property="og:site_name" content="zephyr&#39;s blog">
+<meta property="og:description" content="Rust: impl zero-copy for tokio-tcp-stream">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-07-23T05:27:12.000Z">
+<meta property="article:modified_time" content="2021-07-23T05:45:11.946Z">
+<meta property="article:author" content="@zephyr">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="net">
+<meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+  <link rel="stylesheet" href="/css/style.css?v=1627019238145">
+  
+  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1627019238145">
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="mdui-drawer-body-left">
+  
+  <div id="nexmoe-background">
+    <div class="nexmoe-bg" style="background-image: url(/img/background.jpg)"></div>
+    <div class="mdui-appbar mdui-shadow-0">
+      <div class="mdui-toolbar">
+        <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+        <div class="mdui-toolbar-spacer"></div>
+        <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+        <a href="/" title="@zephyr" class="mdui-btn mdui-btn-icon"><img src="/img/avatar.png" alt="@zephyr"></a>
+       </div>
+    </div>
+  </div>
+  <div id="nexmoe-header">
+      <div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="@zephyr">
+            <img src="/img/avatar.png" alt="@zephyr" alt="@zephyr">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>3</div>
+        <div><span>Tags</span>3</div>
+        <div><span>Categories</span>0</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple" href="/" title="Home">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                Home
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+  
+  <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        <form id="search_form" action_e="https://www.google.com/search?q=https:?/zephyr.moe" onsubmit="return search();">
+            <label><input id="search_value" name="q" type="search" placeholder="Search"></label>
+        </form>
+    </div>
+</div>
+  
+  <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://t.me/hana_akari" target="_blank" mdui-tooltip="{content: 'Telegram'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-telegram"></i>
+        </a><a class="mdui-ripple" href="https://twitter.com/zephyrchien" target="_blank" mdui-tooltip="{content: 'Twitter'}" style="color: rgb(29, 161, 242);background-color: rgba(29, 161, 242, .15);">
+            <i class="nexmoefont icon-twitter"></i>
+        </a><a class="mdui-ripple" href="https://github.com/zephyrchien/" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+  
+  
+
+  
+  
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/life/" style="font-size: 10px;">life</a> <a href="/tags/net/" style="font-size: 10px;">net</a> <a href="/tags/rust/" style="font-size: 10px;">rust</a>
+    </div>
+    
+  </div>
+
+  
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2021 @zephyr
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+  </div>
+  <div id="nexmoe-content">
+    <div class="nexmoe-primary">
+        <div class="nexmoe-post">
+
+  <article>
+    
+        <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+            <img data-src="/2021/07/23/rust-zero-copy/cover.svg" data-sizes="auto" alt="rust-zero-copy" class="lazyload">
+            <h1>rust-zero-copy</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年07月23日</a>
+    <a><i class="nexmoefont icon-areachart"></i>820 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 5 分钟</a>
+</div>
+
+    
+
+    <p>Rust: impl zero-copy for tokio-tcp-stream</p>
+<span id="more"></span>
+<p>Zero-copy is of much significance for a network relay, where the CPU spends nearly all of its time copying transferred data. It could reduce unnecessary CPU copies and context switching between user space and kernel space, thus bringing higher throughout and lower latency.</p>
+<p>I’m working on <a target="_blank" rel="noopener" href="https://github.com/zephyrchien/midori">a multi-protocol network relay(written in rust)</a> these days. I have attempted to impl zero-copy for it. </p>
+<p>Actually Tokio(a popular async framework) does not provide any zero-copy API. It has its own difficulties and I could not expect that in the short term. But in my case, the problem could be simplified, making it possible to write a Tokio-based zero-copy API on my own.</p>
+<p>Consider the async task is just to proxy 2 TCP connection, where there’s no need to use buffers across tasks. <strong>If we create a buffer(pipe) within the task, we could make sure that the pipe is always valid during the async operation.</strong> When the task is finished or cancelled, the pipe will be dropped as normal(of course we need to impl <code>Drop</code> trait for it, in case of resource leak).</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">Pipe</span></span>(<span class="built_in">i32</span>, <span class="built_in">i32</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> Pipe &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">create</span></span>() -&gt; io::<span class="built_in">Result</span>&lt;<span class="keyword">Self</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">use</span> libc::&#123;c_int, O_NONBLOCK&#125;;</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> pipes = std::mem::MaybeUninit::&lt;[c_int; <span class="number">2</span>]&gt;::uninit();</span><br><span class="line">        <span class="keyword">unsafe</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> libc::pipe2(pipes.as_mut_ptr() <span class="keyword">as</span> *<span class="keyword">mut</span> c_int, O_NONBLOCK) &lt; <span class="number">0</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">Err</span>(<span class="comment">/* error handle */</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="literal">Ok</span>(Pipe(pipes.assume_init()[<span class="number">0</span>], pipes.assume_init()[<span class="number">1</span>]))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> Pipe &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">unsafe</span> &#123;</span><br><span class="line">            libc::close(<span class="keyword">self</span>.<span class="number">0</span>);</span><br><span class="line">            libc::close(<span class="keyword">self</span>.<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Moreover, we could <strong>count the left bytes in the pipe</strong>, and limit the max read/write bytes when calling splice. This ensures that the pipe never blocks, and we <strong>no longer need to poll the pipe</strong>, waiting for its readable/writeable event.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">splice_n</span></span>(r: <span class="built_in">i32</span>, w: <span class="built_in">i32</span>, n: <span class="built_in">usize</span>) -&gt; <span class="built_in">isize</span> &#123;</span><br><span class="line">    <span class="keyword">use</span> libc::&#123;loff_t, SPLICE_F_MOVE, SPLICE_F_NONBLOCK&#125;;</span><br><span class="line">    <span class="keyword">unsafe</span> &#123;</span><br><span class="line">        libc::splice(</span><br><span class="line">            r,</span><br><span class="line">            std::ptr::null_mut::&lt;loff_t&gt;(),</span><br><span class="line">            w,</span><br><span class="line">            std::ptr::null_mut::&lt;loff_t&gt;(),</span><br><span class="line">            n,</span><br><span class="line">            SPLICE_F_MOVE | SPLICE_F_NONBLOCK,</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Then which object should we use and where should we read/write from/to? The good news is that we neet not bother to declear a new stream type and write a event loop ourselves. We can <strong>still use <code>TcpStream</code>, making use of its inner event loop</strong>. Instead of calling <code>read/write</code>, we get its inner fd via <code>as_raw_fd()</code> (TcpStream impls AsRawFd), then call <code>libc::splice</code> on the fd directly.</p>
+<p>The problem is that <code>splice</code> does not clear the readiness on the raw fds, which leads to a busy loop. We should call the non-blocking method <code>try_read/write</code> or await on <code>read/write</code>. And we must ensure the kernel returns <code>EWOULDBLOCK</code> or <code>EAGAIN</code> before clear the fd’s readiness, otherwise the data would be corrupted.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">is_wouldblock</span></span>() -&gt; <span class="built_in">bool</span> &#123;</span><br><span class="line">    <span class="keyword">use</span> libc::&#123;EAGAIN, EWOULDBLOCK&#125;;</span><br><span class="line">    <span class="keyword">let</span> errno = <span class="keyword">unsafe</span> &#123; *libc::__errno_location() &#125;;</span><br><span class="line">    errno == EWOULDBLOCK || errno == EAGAIN</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Another thing worth mentioning is that Tokio’s <code>AsyncRead/AsyncWrite</code> trait takes a <code>&amp;[u8]</code> buffer, however we should use a pipe for zero-copy. In my case there is no necessity to declear a new struct like <code>pub struct (Tokio::TcpStream)</code> and impl these traits for it, taking an inner <code>Pipe</code> as the real buffer, and using an empty vec to cheat the caller. There is no need, indeed.</p>
+<p>The main function(use generics to support both TCP and UnixSocket):</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">async</span> <span class="function"><span class="keyword">fn</span> <span class="title">zero_copy</span></span>&lt;X, Y, R, W&gt;(<span class="keyword">mut</span> r: R, <span class="keyword">mut</span> w: W) -&gt; io::<span class="built_in">Result</span>&lt;()&gt;</span><br><span class="line"><span class="keyword">where</span></span><br><span class="line">    X: AsRawFd,</span><br><span class="line">    Y: AsRawFd,</span><br><span class="line">    R: AsyncRead + <span class="built_in">AsRef</span>&lt;X&gt; + Unpin,</span><br><span class="line">    W: AsyncWrite + <span class="built_in">AsRef</span>&lt;Y&gt; + Unpin,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// create pipe</span></span><br><span class="line">    <span class="keyword">let</span> pipe = Pipe::create()?;</span><br><span class="line">    <span class="keyword">let</span> (rpipe, wpipe) = (pipe.<span class="number">0</span>, pipe.<span class="number">1</span>);</span><br><span class="line">    <span class="comment">// get raw fd</span></span><br><span class="line">    <span class="keyword">let</span> rfd = r.as_ref().as_raw_fd();</span><br><span class="line">    <span class="keyword">let</span> wfd = w.as_ref().as_raw_fd();</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> n: <span class="built_in">usize</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> done = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="symbol">&#x27;LOOP</span>: <span class="keyword">loop</span> &#123;</span><br><span class="line">        <span class="comment">// read until the socket buffer is empty</span></span><br><span class="line">        <span class="comment">// or the pipe is filled</span></span><br><span class="line">        <span class="comment">// clear readiness (EPOLLIN)</span></span><br><span class="line">        r.read(&amp;<span class="keyword">mut</span> [<span class="number">0u8</span>; <span class="number">0</span>]).<span class="keyword">await</span>?;</span><br><span class="line">        <span class="keyword">while</span> n &lt; PIPE_BUF_SIZE &#123;</span><br><span class="line">            <span class="keyword">match</span> splice_n(rfd, wpipe, PIPE_BUF_SIZE - n) &#123;</span><br><span class="line">                x <span class="keyword">if</span> x &gt; <span class="number">0</span> =&gt; n += x <span class="keyword">as</span> <span class="built_in">usize</span>,</span><br><span class="line">                x <span class="keyword">if</span> x == <span class="number">0</span> =&gt; &#123;</span><br><span class="line">                    done = <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                x <span class="keyword">if</span> x &lt; <span class="number">0</span> &amp;&amp; is_wouldblock() =&gt; <span class="keyword">break</span>,</span><br><span class="line">                _ =&gt; <span class="keyword">break</span> <span class="symbol">&#x27;LOOP</span>,</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// write until the pipe is empty</span></span><br><span class="line">        <span class="keyword">while</span> n &gt; <span class="number">0</span> &#123;</span><br><span class="line">            <span class="comment">// clear readiness (EPOLLOUT)</span></span><br><span class="line">            w.write(&amp;[<span class="number">0u8</span>; <span class="number">0</span>]).<span class="keyword">await</span>?;</span><br><span class="line">            <span class="keyword">match</span> splice_n(rpipe, wfd, n) &#123;</span><br><span class="line">                x <span class="keyword">if</span> x &gt; <span class="number">0</span> =&gt; n -= x <span class="keyword">as</span> <span class="built_in">usize</span>,</span><br><span class="line">                x <span class="keyword">if</span> x &lt; <span class="number">0</span> &amp;&amp; is_wouldblock() =&gt; &#123;&#125;</span><br><span class="line">                _ =&gt; <span class="keyword">break</span> <span class="symbol">&#x27;LOOP</span>,</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// complete</span></span><br><span class="line">        <span class="keyword">if</span> done &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    w.shutdown().<span class="keyword">await</span>?;</span><br><span class="line">    <span class="literal">Ok</span>(())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+  </article>
+
+  
+    
+  <div class="nexmoe-post-copyright">
+    <strong>Author：</strong>@zephyr<br>
+    <strong>Link：</strong><a href="https://zephyr.moe/2021/07/23/rust-zero-copy/" title="https:&#x2F;&#x2F;zephyr.moe&#x2F;2021&#x2F;07&#x2F;23&#x2F;rust-zero-copy&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;zephyr.moe&#x2F;2021&#x2F;07&#x2F;23&#x2F;rust-zero-copy&#x2F;</a><br>
+    
+      <strong>License：</strong><a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a>
+    
+  </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/net/" rel="tag">net</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/rust/" rel="tag">rust</a>
+    
+</div>
+
+  <div class="nexmoe-post-footer">
+    
+  </div>
+</div>
+        <div class="nexmoe-post-right">
+          <div class="nexmoe-fixed">
+            <div class="nexmoe-tool"> 
+              
+                
+              
+              <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/gh/xtaodada/xtaodada.github.io@0.0.2/copy.js"></script>
+ 
+
+<script async src="/js/app.js?v=1627019238147"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+  
+
+
+
+
+
+</body>
+
+</html>
