@@ -151,9 +151,7 @@ article code::-webkit-scrollbar-thumb {
   color: #abb2bf;
   margin: 0;
   border-radius: 13px;
-}
-.highlight * {
-  font-family: monospace;
+  overflow: auto;
 }
 .highlight .line {
   padding: 0 1em;
@@ -537,6 +535,7 @@ article ul li {
   position: relative;
   padding: 10px 0;
   padding-left: 25px;
+  line-height: 1rem;
 }
 article ul li::before {
   content: '';
@@ -678,7 +677,7 @@ article.nexmoe-py ul li {
   width: calc(14.285714285714286% - 10px);
   margin: 5px;
   border-radius: 10px;
-  border: 1px solid #eee;
+  box-shadow: 0 0 0 1px #eee;
   font-size: 0;
   overflow: hidden;
   padding: 0 !important;
@@ -857,6 +856,10 @@ body {
   padding: 20px;
   box-sizing: border-box;
   outline: none;
+}
+#nexmoe-header input::-webkit-search-decoration,
+#nexmoe-header input::-webkit-search-cancel-button {
+  display: none !important;
 }
 #nexmoe-header .nexmoe-social {
   padding: 12px;
