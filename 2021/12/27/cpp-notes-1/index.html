@@ -4,7 +4,7 @@
 
 <head>
   
-  <title>zephyr&#39;s backyard</title>
+  <title>c++ noncopyable-object - zephyr&#39;s backyard</title>
   <meta charset="UTF-8">
   <meta name="description" content="zephyr&#39;s backyard">
   <meta name="keywords" content="anime, galgame, linux, programming">
@@ -13,20 +13,23 @@
   
 
   <link rel="shortcut icon" href="/ico/kuna.jpg" type="image/jpg" />
-  <meta name="description" content="zephyr&#39;s backyard">
-<meta property="og:type" content="website">
-<meta property="og:title" content="zephyr&#39;s backyard">
-<meta property="og:url" content="https://zephyr.moe/index.html">
+  <meta name="description" content="众所周知，move的开销低于copy，只需要交换指针即可转移堆上内存的所有权。并且很多时候我们不需要同时保留两份实例，我们甚至希望某个资源是独占的，这时候就可以禁用它的拷贝构造函数： 12345&amp;#123;    T(const T&amp;) &#x3D; delete;    T&amp; operator&#x3D;(const T&amp;) &#x3D; delete; &amp;#125;  这样它就只能move，不能co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++ noncopyable-object">
+<meta property="og:url" content="https://zephyr.moe/2021/12/27/cpp-notes-1/index.html">
 <meta property="og:site_name" content="zephyr&#39;s backyard">
-<meta property="og:description" content="zephyr&#39;s backyard">
+<meta property="og:description" content="众所周知，move的开销低于copy，只需要交换指针即可转移堆上内存的所有权。并且很多时候我们不需要同时保留两份实例，我们甚至希望某个资源是独占的，这时候就可以禁用它的拷贝构造函数： 12345&amp;#123;    T(const T&amp;) &#x3D; delete;    T&amp; operator&#x3D;(const T&amp;) &#x3D; delete; &amp;#125;  这样它就只能move，不能co">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-12-26T15:48:14.000Z">
+<meta property="article:modified_time" content="2021-12-26T16:14:58.596Z">
 <meta property="article:author" content="@zephyr">
-<meta property="article:tag" content="anime, galgame, linux, programming">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="notes">
 <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-  <link rel="stylesheet" href="/css/style.css?v=1640535320352">
+  <link rel="stylesheet" href="/css/style.css?v=1640535320325">
   
-  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1640535320352">
+  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1640535320325">
 <meta name="generator" content="Hexo 5.4.0"></head>
 
 <body class="mdui-drawer-body-left">
@@ -171,27 +174,25 @@
   </div>
   <div id="nexmoe-content">
     <div class="nexmoe-primary">
-        <section class="nexmoe-posts">
+        <div class="nexmoe-post">
+
+  <article>
     
-    <div class="nexmoe-post">
-        <a href="/2021/12/27/cpp-notes-1/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: 66.66666666666666%;"> 
-                    <img data-src="/img/background.jpeg" data-sizes="auto" alt="c++ noncopyable-object" class="lazyload">
-                    <h1>c++ noncopyable-object</h1>
-                </div>
-            
-        </a>
-
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年12月26日</a>
-            <a><i class="nexmoefont icon-areachart"></i>358 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
+        <div class="nexmoe-post-cover" style="padding-bottom: 66.66666666666666%;"> 
+            <img data-src="/img/background.jpeg" data-sizes="auto" alt="c++ noncopyable-object" class="lazyload">
+            <h1>c++ noncopyable-object</h1>
         </div>
+    
+    
+    <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2021年12月26日</a>
+    <a><i class="nexmoefont icon-areachart"></i>358 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
+</div>
 
-        <article>
-            
-                <p>众所周知，move的开销低于copy，只需要交换指针即可转移堆上内存的所有权。并且很多时候我们不需要同时保留两份实例，我们甚至希望某个资源是独占的，这时候就可以禁用它的拷贝构造函数：</p>
+    
+
+    <p>众所周知，move的开销低于copy，只需要交换指针即可转移堆上内存的所有权。并且很多时候我们不需要同时保留两份实例，我们甚至希望某个资源是独占的，这时候就可以禁用它的拷贝构造函数：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="built_in">T</span>(<span class="keyword">const</span> T&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    T&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> T&amp;) = <span class="keyword">delete</span>; </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>这样它就只能move，不能copy了。不过每次都要这样写一遍，实在太麻烦。更好的做法是定义一个不能copy的基类，让其他类去继承它。只要不能通过copy构造基类，自然也就没法继续去构造子类了。</p>
@@ -201,151 +202,50 @@
 <p>虽然加了一堆宏定义(为了兼容老版本cpp)，但是核心内容就只有两点: 把默认构造函数的访问权限设定为<strong>protected</strong>，这样只有继承它的子类才可以访问(构造)；把拷贝构造函数删除或者屏蔽(设定为private)。</p>
 <p>有了这项基础设施以后，就可以愉快的玩耍了(<del>我看还是rust来的实在</del>)</p>
 
-            
-        </article>
-    </div>
+  </article>
+
+  
     
-    <div class="nexmoe-post">
-        <a href="/2021/10/17/ningen-no-kuzu/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/10/17/ningen-no-kuzu/cover.png" data-sizes="auto" alt="垃圾的一生" class="lazyload">
-                    <h1>垃圾的一生</h1>
-                </div>
-            
-        </a>
-
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年10月17日</a>
-            <a><i class="nexmoefont icon-areachart"></i>4.2k 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 17 分钟</a>
-        </div>
-
-        <article>
-            
-                <p>五年前，国庆放假过后的第一个星期日，我失了智，此后又逐渐失去了健康、快乐、以及尊严，从咸鱼变成了真正的行尸走肉</p>
-            
-        </article>
-    </div>
+  <div class="nexmoe-post-copyright">
+    <strong>Author：</strong>@zephyr<br>
+    <strong>Link：</strong><a href="https://zephyr.moe/2021/12/27/cpp-notes-1/" title="https:&#x2F;&#x2F;zephyr.moe&#x2F;2021&#x2F;12&#x2F;27&#x2F;cpp-notes-1&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;zephyr.moe&#x2F;2021&#x2F;12&#x2F;27&#x2F;cpp-notes-1&#x2F;</a><br>
     
-    <div class="nexmoe-post">
-        <a href="/2021/08/21/cf-workers-wasm/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/08/21/cf-workers-wasm/cover.png" data-sizes="auto" alt="cf-workers-wasm" class="lazyload">
-                    <h1>cf-workers-wasm</h1>
-                </div>
-            
-        </a>
-
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年08月21日</a>
-            <a><i class="nexmoefont icon-areachart"></i>1.1k 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 5 分钟</a>
-        </div>
-
-        <article>
-            
-                <p>在cloudflare workers上体验一下wasm:)</p>
-            
-        </article>
-    </div>
+      <strong>License：</strong><a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a>
     
-    <div class="nexmoe-post">
-        <a href="/2021/08/06/try-wine-for-galgame/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/08/06/try-wine-for-galgame/cover.jpg" data-sizes="auto" alt="Wine + 死神のテスタメント" class="lazyload">
-                    <h1>Wine + 死神のテスタメント</h1>
-                </div>
-            
-        </a>
+  </div>
 
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年08月06日</a>
-            <a><i class="nexmoefont icon-areachart"></i>450 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
-        </div>
 
-        <article>
-            
-                <p>十年前的老物，没法在win11上直接运行，只能曲线救国了:(</p>
-            
-        </article>
-    </div>
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
     
-    <div class="nexmoe-post">
-        <a href="/2021/07/23/rust-zero-copy/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/07/23/rust-zero-copy/cover.svg" data-sizes="auto" alt="rust-zero-copy" class="lazyload">
-                    <h1>rust-zero-copy</h1>
-                </div>
-            
-        </a>
-
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年07月23日</a>
-            <a><i class="nexmoefont icon-areachart"></i>976 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 6 分钟</a>
-        </div>
-
-        <article>
-            
-                <p>Rust: implement tcp zero-copy in an asynchronous context</p>
-            
-        </article>
-    </div>
     
-    <div class="nexmoe-post">
-        <a href="/2021/07/02/summer-is-coming/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/07/02/summer-is-coming/cover.jpeg" data-sizes="auto" alt="夏が来た" class="lazyload">
-                    <h1>夏が来た</h1>
-                </div>
-            
-        </a>
-
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年07月02日</a>
-            <a><i class="nexmoefont icon-areachart"></i>39 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
-        </div>
-
-        <article>
-            
-                <p>又一个夏天</p>
-            
-        </article>
-    </div>
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/c/" rel="tag">c++</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/notes/" rel="tag">notes</a>
     
-    <div class="nexmoe-post">
-        <a href="/2021/06/14/hello-world/">
-            
-                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: NaN%;"> 
-                    <img data-src="/2021/06/14/hello-world/cover.jpg" data-sizes="auto" alt="こんにちは，世界" class="lazyload">
-                    <h1>こんにちは，世界</h1>
-                </div>
-            
-        </a>
+</div>
 
-        <div class="nexmoe-post-meta nexmoe-rainbow">
-            <a><i class="nexmoefont icon-calendar-fill"></i>2021年06月14日</a>
-            <a><i class="nexmoefont icon-areachart"></i>10 字</a>
-            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
-        </div>
+  <div class="nexmoe-post-footer">
+    <section class="nexmoe-comment">
+    <style>
+  #nexmoe-content .nexmoe-comment {
+    background-color: #fff;
+    border-top: 20px solid #f5f6f5;
+  }
+</style>
+<script
+  async
+  src="https://comments.app/js/widget.js?2"
+  data-comments-app-website="IeDW7IbG"
+  data-limit="5"
+  data-color=""
+  data-dislikes="0"
+  data-outlined="0"
+  data-colorful="1"
+></script>
 
-        <article>
-            
-                <p>自分の心の中で新たな一歩を踏み出す</p>
-
-            
-        </article>
-    </div>
-    
 </section>
-
+  </div>
+</div>
         <div class="nexmoe-post-right">
           <div class="nexmoe-fixed">
             <div class="nexmoe-tool"> 
@@ -364,7 +264,7 @@
 
  
 
-<script async src="/js/app.js?v=1640535320353"></script>
+<script async src="/js/app.js?v=1640535320327"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
 <script>

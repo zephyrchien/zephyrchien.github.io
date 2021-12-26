@@ -24,9 +24,9 @@
 <meta property="article:tag" content="anime, galgame, linux, programming">
 <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-  <link rel="stylesheet" href="/css/style.css?v=1637371478615">
+  <link rel="stylesheet" href="/css/style.css?v=1640535320346">
   
-  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1637371478615">
+  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1640535320346">
 <meta name="generator" content="Hexo 5.4.0"></head>
 
 <body class="mdui-drawer-body-left">
@@ -50,8 +50,8 @@
         </a>
     </div>
     <div class="nexmoe-count">
-        <div><span>Articles</span>6</div>
-        <div><span>Tags</span>7</div>
+        <div><span>Articles</span>7</div>
+        <div><span>Tags</span>9</div>
         <div><span>Categories</span>0</div>
     </div>
     <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
@@ -112,7 +112,7 @@
   
   <div class="nexmoe-widget-wrap">
     <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
-      <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/galgame/" style="font-size: 10px;">galgame</a> <a href="/tags/life/" style="font-size: 20px;">life</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/net/" style="font-size: 10px;">net</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/wasm/" style="font-size: 10px;">wasm</a>
+      <a href="/tags/c/" style="font-size: 10px;">c++</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/galgame/" style="font-size: 10px;">galgame</a> <a href="/tags/life/" style="font-size: 20px;">life</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/net/" style="font-size: 10px;">net</a> <a href="/tags/notes/" style="font-size: 10px;">notes</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/wasm/" style="font-size: 10px;">wasm</a>
     </div>
     
   </div>
@@ -123,6 +123,10 @@
     <h3 class="nexmoe-widget-title">Recent Posts</h3>
     <div class="nexmoe-widget">
       <ul>
+        
+          <li>
+            <a href="/2021/12/27/cpp-notes-1/">c++ noncopyable-object</a>
+          </li>
         
           <li>
             <a href="/2021/10/17/ningen-no-kuzu/">垃圾的一生</a>
@@ -140,10 +144,6 @@
             <a href="/2021/07/23/rust-zero-copy/">rust-zero-copy</a>
           </li>
         
-          <li>
-            <a href="/2021/07/02/summer-is-coming/">夏が来た</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -153,7 +153,7 @@
   <div class="nexmoe-widget-wrap">
     <h3 class="nexmoe-widget-title">Archive</h3>
     <div class="nexmoe-widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">6</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">7</span></li></ul>
     </div>
   </div>
 
@@ -172,6 +172,38 @@
   <div id="nexmoe-content">
     <div class="nexmoe-primary">
         <section class="nexmoe-posts">
+    
+    <div class="nexmoe-post">
+        <a href="/2021/12/27/cpp-notes-1/">
+            
+                <div class="nexmoe-post-cover mdui-ripple" style="padding-bottom: 66.66666666666666%;"> 
+                    <img data-src="/img/background.jpeg" data-sizes="auto" alt="c++ noncopyable-object" class="lazyload">
+                    <h1>c++ noncopyable-object</h1>
+                </div>
+            
+        </a>
+
+        <div class="nexmoe-post-meta nexmoe-rainbow">
+            <a><i class="nexmoefont icon-calendar-fill"></i>2021年12月26日</a>
+            <a><i class="nexmoefont icon-areachart"></i>358 字</a>
+            <a><i class="nexmoefont icon-time-circle-fill"></i>大概 1 分钟</a>
+        </div>
+
+        <article>
+            
+                <p>众所周知，move的开销低于copy，只需要交换指针即可转移堆上内存的所有权。并且很多时候我们不需要同时保留两份实例，我们甚至希望某个资源是独占的，这时候就可以禁用它的拷贝构造函数：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="built_in">T</span>(<span class="keyword">const</span> T&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">    T&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> T&amp;) = <span class="keyword">delete</span>; </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样它就只能move，不能copy了。不过每次都要这样写一遍，实在太麻烦。更好的做法是定义一个不能copy的基类，让其他类去继承它。只要不能通过copy构造基类，自然也就没法继续去构造子类了。</p>
+<p>boost库中刚好有noncopyable，可以拿来借鉴一下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> noncopyable_</span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> BOOST_NONCOPYABLE_BASE_TOKEN_DEFINED</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BOOST_NONCOPYABLE_BASE_TOKEN_DEFINED</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">base_token</span> &#123;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">noncopyable</span>:</span> base_token</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">protected</span>:</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) &amp;&amp; !defined(BOOST_NO_CXX11_NON_PUBLIC_DEFAULTED_FUNCTIONS)</span></span><br><span class="line">        <span class="function">BOOST_CONSTEXPR <span class="title">noncopyable</span><span class="params">()</span> </span>= <span class="keyword">default</span>;</span><br><span class="line">        ~<span class="built_in">noncopyable</span>() = <span class="keyword">default</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="built_in">noncopyable</span>() &#123;&#125;</span><br><span class="line">        ~<span class="built_in">noncopyable</span>() &#123;&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !defined(BOOST_NO_CXX11_DELETED_FUNCTIONS)</span></span><br><span class="line">        <span class="built_in">noncopyable</span>( <span class="keyword">const</span> noncopyable&amp; ) = <span class="keyword">delete</span>;</span><br><span class="line">        noncopyable&amp; <span class="keyword">operator</span>=( <span class="keyword">const</span> noncopyable&amp; ) = <span class="keyword">delete</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        <span class="built_in">noncopyable</span>( <span class="keyword">const</span> noncopyable&amp; );</span><br><span class="line">        noncopyable&amp; <span class="keyword">operator</span>=( <span class="keyword">const</span> noncopyable&amp; );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> noncopyable_::noncopyable noncopyable;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>虽然加了一堆宏定义(为了兼容老版本cpp)，但是核心内容就只有两点: 把默认构造函数的访问权限设定为<strong>protected</strong>，这样只有继承它的子类才可以访问(构造)；把拷贝构造函数删除或者屏蔽(设定为private)。</p>
+<p>有了这项基础设施以后，就可以愉快的玩耍了(<del>我看还是rust来的实在</del>)</p>
+
+            
+        </article>
+    </div>
     
     <div class="nexmoe-post">
         <a href="/2021/10/17/ningen-no-kuzu/">
@@ -332,7 +364,7 @@
 
  
 
-<script async src="/js/app.js?v=1637371478617"></script>
+<script async src="/js/app.js?v=1640535320347"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
 <script>
