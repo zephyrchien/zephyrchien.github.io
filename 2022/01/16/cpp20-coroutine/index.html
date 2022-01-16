@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html lang="en-us,zh-cn,ja-jp,default">
+
+<head>
+  
+  <title>c++20-coroutine - zephyr&#39;s backyard</title>
+  <meta charset="UTF-8">
+  <meta name="description" content="zephyr&#39;s backyard">
+  <meta name="keywords" content="anime, galgame, linux, programming">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  
+  
+
+  <link rel="shortcut icon" href="/ico/kuna.jpg" type="image/jpg" />
+  <meta name="description" content="Implement minimal coroutine primitives with c++20">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++20-coroutine">
+<meta property="og:url" content="https://zephyr.moe/2022/01/16/cpp20-coroutine/index.html">
+<meta property="og:site_name" content="zephyr&#39;s backyard">
+<meta property="og:description" content="Implement minimal coroutine primitives with c++20">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-15T23:41:06.000Z">
+<meta property="article:modified_time" content="2022-01-16T02:10:27.919Z">
+<meta property="article:author" content="@zephyr">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="net">
+<meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
+  <link rel="stylesheet" href="/css/style.css?v=1642299064323">
+  
+  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1642299064323">
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="mdui-drawer-body-left">
+  
+  <div id="nexmoe-background">
+    <div class="nexmoe-bg" style="background-image: url(/img/background.jpeg)"></div>
+    <div class="mdui-appbar mdui-shadow-0">
+      <div class="mdui-toolbar">
+        <a mdui-drawer="{target: '#drawer', swipe: true}" title="menu" class="mdui-btn mdui-btn-icon mdui-ripple"><i class="mdui-icon nexmoefont icon-menu"></i></a>
+        <div class="mdui-toolbar-spacer"></div>
+        <!--<a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+        <a href="/" title="@zephyr" class="mdui-btn mdui-btn-icon"><img src="https://avatars.githubusercontent.com/u/51367850" alt="@zephyr"></a>
+       </div>
+    </div>
+  </div>
+  <div id="nexmoe-header">
+      <div class="nexmoe-drawer mdui-drawer" id="drawer">
+    <div class="nexmoe-avatar mdui-ripple">
+        <a href="/" title="@zephyr">
+            <img src="https://avatars.githubusercontent.com/u/51367850" alt="@zephyr" alt="@zephyr">
+        </a>
+    </div>
+    <div class="nexmoe-count">
+        <div><span>Articles</span>8</div>
+        <div><span>Tags</span>9</div>
+        <div><span>Categories</span>0</div>
+    </div>
+    <div class="nexmoe-list mdui-list" mdui-collapse="{accordion: true}">
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple" href="/" title="首页">
+            <i class="mdui-list-item-icon nexmoefont icon-home"></i>
+            <div class="mdui-list-item-content">
+                首页
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple" href="/archives/" title="归档">
+            <i class="mdui-list-item-icon nexmoefont icon-container"></i>
+            <div class="mdui-list-item-content">
+                归档
+            </div>
+        </a>
+        
+        <a class="nexmoe-list-item mdui-list-item mdui-ripple" href="/links.html" title="友链">
+            <i class="mdui-list-item-icon nexmoefont icon-unorderedlist"></i>
+            <div class="mdui-list-item-content">
+                友链
+            </div>
+        </a>
+        
+    </div>
+    <aside id="nexmoe-sidebar">
+  
+  <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-search">
+        
+            <form id="search_form">
+                <label><input class="st-default-search-input" id="search_value" name="q" type="search" placeholder="Search" style="
+                    font-size: 15px !important;
+                    height: 56px !important;
+                    background-image: none;
+                "></label>
+            </form>
+         
+    </div>
+</div>
+  
+  <div class="nexmoe-widget-wrap">
+    <div class="nexmoe-widget nexmoe-social">
+        <a class="mdui-ripple" href="https://t.me/hana_akari" target="_blank" mdui-tooltip="{content: 'Telegram'}" style="color: rgb(231, 106, 141);background-color: rgba(231, 106, 141, .15);">
+            <i class="nexmoefont icon-telegram"></i>
+        </a><a class="mdui-ripple" href="https://twitter.com/zephyrchien" target="_blank" mdui-tooltip="{content: 'Twitter'}" style="color: rgb(29, 161, 242);background-color: rgba(29, 161, 242, .15);">
+            <i class="nexmoefont icon-twitter"></i>
+        </a><a class="mdui-ripple" href="https://github.com/zephyrchien" target="_blank" mdui-tooltip="{content: 'GitHub'}" style="color: rgb(25, 23, 23);background-color: rgba(25, 23, 23, .15);">
+            <i class="nexmoefont icon-github"></i>
+        </a>
+    </div>
+</div>
+  
+  
+
+  
+  
+  <div class="nexmoe-widget-wrap">
+    <div id="randomtagcloud" class="nexmoe-widget tagcloud nexmoe-rainbow">
+      <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/galgame/" style="font-size: 10px;">galgame</a> <a href="/tags/life/" style="font-size: 20px;">life</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/net/" style="font-size: 20px;">net</a> <a href="/tags/notes/" style="font-size: 10px;">notes</a> <a href="/tags/rust/" style="font-size: 20px;">rust</a> <a href="/tags/wasm/" style="font-size: 10px;">wasm</a>
+    </div>
+    
+  </div>
+
+  
+  
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Recent Posts</h3>
+    <div class="nexmoe-widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/01/16/cpp20-coroutine/">c++20-coroutine</a>
+          </li>
+        
+          <li>
+            <a href="/2021/12/27/cpp-notes-1/">c++ noncopyable-object</a>
+          </li>
+        
+          <li>
+            <a href="/2021/10/17/ningen-no-kuzu/">垃圾的一生</a>
+          </li>
+        
+          <li>
+            <a href="/2021/08/21/cf-workers-wasm/">cf-workers-wasm</a>
+          </li>
+        
+          <li>
+            <a href="/2021/08/06/try-wine-for-galgame/">Wine + 死神のテスタメント</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+  
+  <div class="nexmoe-widget-wrap">
+    <h3 class="nexmoe-widget-title">Archive</h3>
+    <div class="nexmoe-widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+
+
+  
+</aside>
+    <div class="nexmoe-copyright">
+        &copy; 2022 @zephyr
+        Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+        & <a href="https://github.com/theme-nexmoe/hexo-theme-nexmoe" target="_blank">Nexmoe</a>
+        
+    </div>
+</div><!-- .nexmoe-drawer -->
+  </div>
+  <div id="nexmoe-content">
+    <div class="nexmoe-primary">
+        <div class="nexmoe-post">
+
+  <article>
+    
+        <div class="nexmoe-post-cover" style="padding-bottom: NaN%;"> 
+            <img data-src="/2022/01/16/cpp20-coroutine/cover.png" data-sizes="auto" alt="c++20-coroutine" class="lazyload">
+            <h1>c++20-coroutine</h1>
+        </div>
+    
+    
+    <div class="nexmoe-post-meta nexmoe-rainbow" style="margin:10px 0!important;">
+    <a><i class="nexmoefont icon-calendar-fill"></i>2022年01月16日</a>
+    <a><i class="nexmoefont icon-areachart"></i>1.2k 字</a>
+    <a><i class="nexmoefont icon-time-circle-fill"></i>大概 7 分钟</a>
+</div>
+
+    
+
+    <p>Implement minimal coroutine primitives with c++20</p>
+<span id="more"></span>
+
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>Using callback style APIs is painful. Still, Lambda is not a good-enough solution. When deeply nested, it looks terrible. At the same time, objects’ lifetimes are hard to manage, even with the help of smart pointers and RAII. Look at the code below:<br>(BTW, Asio is a great library:))</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    socket.<span class="built_in">read_some</span>(buffer, [socket, buffer](ec, read_n)&#123;</span><br><span class="line">        ...</span><br><span class="line">        socket.<span class="built_in">write_some</span>(buffer, [](ec, write_n)&#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>We have to pass shared_ptr(catched and saved in lambda struct) to keep objects alive, although they are obviously unique. Here the use of shared_ptr brings some overhead, to make things work correctly, we sacrificed performance.</p>
+<p>What about using coroutine:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> [ec, n] = <span class="keyword">co_await</span> socket.<span class="built_in">read_some</span>(buffer, use_awaitable);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> [ec, n] = <span class="keyword">co_await</span> socket.<span class="built_in">write_some</span>(buffer, use_awaitable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The code is much more simplified. No more callback, no more shared_ptr.</p>
+<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><p>Most language provides syntax like <code>async</code> <code>await</code>, very easy to use. As for C++, it provides more detailed control, and we need to implement almost everything on our own, or use third-party libraries. I have made a toy coroutine library yesterday, the purpose of this article is to introduce how coroutine works, and how to implement minimal primitives.</p>
+<p><strong>Coroutine is pre-allocated on heap, its data is stored in Task::promise_type. Task is a user-defined type, it must have a inner <code>promise_type</code>.</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Task</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span> &#123;</span></span><br><span class="line"></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">using</span> promise_type = Promise;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>promise_type</code> must have these function members:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Promise</span> &#123;</span></span><br><span class="line">    <span class="built_in">get_return_object</span>();</span><br><span class="line">    <span class="built_in">initial_suspend</span>();</span><br><span class="line">    <span class="built_in">final_suspend</span>();</span><br><span class="line">    <span class="built_in">return_value</span>(); <span class="comment">// or return_void</span></span><br><span class="line">    <span class="built_in">unhandled_exception</span>();</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>coroutine_handle</code> is used to refer to a coroutine. With a non-type <code>coroutine_handle&lt;void&gt;</code>, we can resume, or destroy the corresponded coroutine. With a concrete typed <code>coroutine_handle&lt;T&gt;</code>, we can get its data, the type of which is mentioned above: <code>promise_type</code>.</p>
+<p><code>awaitable</code> object is what well call <code>co_await</code> on. It is also a use-defined type, but must have these three function members:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Awaiter</span> &#123;</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">await_ready</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="keyword">or</span> <span class="keyword">bool</span> <span class="title">await_suspend</span><span class="params">(coroutine_handle)</span></span>;</span><br><span class="line">    <span class="function">ReturnType <span class="title">await_resume</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>If <code>await_ready</code> returns <code>true</code>, the coroutine will not be suspended, other two functions will not be called. <code>co_await Awaitable</code> does not make any effort. </p>
+</li>
+<li><p>If <code>await_suspend</code> returns false, it will be resumed immediately, <code>await_resume</code> will be called. Otherwise, the coroutine is suspended.</p>
+</li>
+<li><p>When the coroutine is resumed(call coroutine_handle.resume()), <code>await_resume</code> will be called, and return its value to <code>co_await</code>;</p>
+</li>
+</ul>
+<h2 id="First-Coroutine"><a href="#First-Coroutine" class="headerlink" title="First Coroutine"></a>First Coroutine</h2><p>Look at the example below:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;coroutine&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Task</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span>;</span></span><br><span class="line">    <span class="keyword">using</span> promise_type = Promise;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span> &#123;</span></span><br><span class="line">        <span class="function">Task <span class="title">get_return_object</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                std::coroutine_handle&lt;Promise&gt;::<span class="built_in">from_promise</span>(*<span class="keyword">this</span>)</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function">std::suspend_always <span class="title">initial_suspend</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            std::cout &lt;&lt; <span class="string">&quot;initial suspend&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">            <span class="keyword">return</span> &#123;&#125;; </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function">std::suspend_always <span class="title">final_suspend</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123;</span><br><span class="line">            std::cout &lt;&lt; <span class="string">&quot;final suspend&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">            <span class="keyword">return</span> &#123;&#125;; </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">unhandled_exception</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">return_void</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            std::cout &lt;&lt; <span class="string">&quot;co_return called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    std::coroutine_handle&lt;Promise&gt; this_handle;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Task <span class="title">coro1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;enter coro1&quot;</span> &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">co_await</span> std::suspend_always&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;leave coro1&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">auto</span> handle = <span class="built_in">coro1</span>().this_handle;</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;resume(1) in main&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    handle.<span class="built_in">resume</span>();</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;resume(2) in main&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    handle.<span class="built_in">resume</span>();</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;resume(3) in main&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Output:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">initial <span class="built_in">suspend</span></span><br><span class="line">resume(1) <span class="keyword">in</span> main</span><br><span class="line">enter coro1</span><br><span class="line">resume(2) <span class="keyword">in</span> main</span><br><span class="line">leave coro1</span><br><span class="line">co_return called</span><br><span class="line">final <span class="built_in">suspend</span></span><br><span class="line">resume(3) <span class="keyword">in</span> main</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>promise_type::initial_suspend</code> is called when Task created. If it returns <code>suspend_always</code>, then the coroutine is <strong>lazy</strong>, it will stop execution and give the control flow back to the main funtion. If it returns <code>suspend_never</code>, then it will continue to execute, until next <code>co_await</code>;</p>
+</li>
+<li><p><code>promise::return_void/return_value</code> and <code>promise::final_suspend</code> is called when the Task finished. In this example, <code>co_await</code> is implicitly called at the end of <code>coro1</code>. If <code>co_return</code> is called earlier, then the Task will finish early, and <code>return_void/value</code> &amp; <code>final_suspend</code> will be called.</p>
+</li>
+<li><p>control flow:</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">co_await</span> <span class="title">promise_type::initial_suspend</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// this is coro1 </span></span><br><span class="line">    &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;enter coro1&quot;</span> &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">co_await</span> std::suspend_always&#123;&#125;;</span><br><span class="line"></span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;leave coro1&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">co_await</span> <span class="title">promise_type::final_suspend</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>resume(1)</code> resumes initial suspend</p>
+</li>
+<li><p><code>resume(2)</code> resumes <code>co_await std::suspend_always&#123;&#125;</code> defined in <code>coro1</code></p>
+</li>
+<li><p><code>resume(3)</code> resumes final suspend</p>
+</li>
+</ul>
+<p>When calling <code>coroutine_handle.resume()</code>, the control flow goes to where the coroutine is suspended last time, and the execution continues, until next suspend. When the coroutine is suspended, the control flow goes back to the location where the caller called resume().</p>
+<p><strong>We can also pass control flow to another coroutine, by passing(return by <code>await_resume</code>) another coroutine’s coroutine_handle.</strong></p>
+<p><strong>To allow syntax like <code>co_await Task</code>, we need to implement <code>await_ready</code>, <code>await_suspend</code>, <code>await_resume</code> for Task, or overload its <code>operator co_await</code></strong></p>
+<p>With the two point above, we can create nested Task, and pass control flow back and forth. <strong>The trick is to store <code>outer coroutine_handle</code> when Task is called <code>co_await</code> on, store it in <code>promise_type</code>, and return <code>inner coroutine_handle</code> to have inner coroutine executed. After the inner coroutine finished, return the <code>outer coroutine handle</code> to go back to outer coroutine</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Task</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span>;</span></span><br><span class="line">    <span class="keyword">using</span> promise_type = Promise;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span> &#123;</span></span><br><span class="line">        <span class="function">Task <span class="title">get_return_object</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">                std::coroutine_handle&lt;Promise&gt;::<span class="built_in">from_promise</span>(*<span class="keyword">this</span>)</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function">std::suspend_always</span></span><br><span class="line"><span class="function">        <span class="title">initial_suspend</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> &#123;&#125;; &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">FinalAwaiter</span> &#123;</span></span><br><span class="line">            <span class="function"><span class="keyword">constexpr</span> <span class="keyword">bool</span> <span class="title">await_ready</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> <span class="literal">false</span>; &#125;</span><br><span class="line">            </span><br><span class="line">            std::coroutine_handle&lt;&gt;</span><br><span class="line">            <span class="built_in">await_suspend</span>(std::coroutine_handle&lt;Promise&gt; this_handle) <span class="keyword">noexcept</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> this_handle.<span class="built_in">promise</span>().super_handle;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// nothing to do, the coroutine will no longer be executed</span></span><br><span class="line">            <span class="function"><span class="keyword">void</span> <span class="title">await_resume</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123;&#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">        <span class="function">FinalAwaiter</span></span><br><span class="line"><span class="function">        <span class="title">final_suspend</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> &#123;&#125;; &#125;</span><br><span class="line">        </span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">unhandled_exception</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">return_void</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">        </span><br><span class="line">        std::coroutine_handle&lt;&gt; super_handle;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    std::coroutine_handle&lt;Promise&gt; this_handle;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="keyword">operator</span> <span class="title">co_await</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">Awaiter</span> &#123;</span></span><br><span class="line">            std::coroutine_handle&lt;Promise&gt; this_handle;</span><br><span class="line">            </span><br><span class="line">            <span class="function"><span class="keyword">constexpr</span> <span class="keyword">bool</span> <span class="title">await_ready</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="literal">false</span>; &#125;</span><br><span class="line">            </span><br><span class="line">            std::coroutine_handle&lt;&gt;</span><br><span class="line">            <span class="built_in">await_suspend</span>(std::coroutine_handle&lt;&gt; super_handle) &#123;</span><br><span class="line">                this_handle.<span class="built_in">promise</span>().super_handle = super_handle;</span><br><span class="line">                <span class="keyword">return</span> this_handle;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// return result of inner coroutine..</span></span><br><span class="line">            <span class="function"><span class="keyword">void</span> <span class="title">await_resume</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> Awaiter&#123; this_handle &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>At last, when the task is finished(or the promise is fulfilled), delete the promise(coroutine frame) whith <code>coroutine_handle.destroy()</code>. If <code>final_suspend</code> does not suspend, it will release the coroutine frame automatically. To get the result value(stored in promise) of the Task, the the promise should not be destroyed, it should be suspended at <code>final_suspend</code>. Then, get the value from promise, and destroy the promise manually(It is recommended to do this in Task’s destructor, RAII).</p>
+<p>For more details, you can refer to <a target="_blank" rel="noopener" href="https://github.com/zephyrchien/minio">this repo</a>. It implements <code>Task</code> and Readable &amp; Writable <code>Awaiter</code> for Epoll events.</p>
+
+  </article>
+
+  
+    
+  <div class="nexmoe-post-copyright">
+    <strong>Author：</strong>@zephyr<br>
+    <strong>Link：</strong><a href="https://zephyr.moe/2022/01/16/cpp20-coroutine/" title="https:&#x2F;&#x2F;zephyr.moe&#x2F;2022&#x2F;01&#x2F;16&#x2F;cpp20-coroutine&#x2F;" target="_blank" rel="noopener">https:&#x2F;&#x2F;zephyr.moe&#x2F;2022&#x2F;01&#x2F;16&#x2F;cpp20-coroutine&#x2F;</a><br>
+    
+      <strong>License：</strong><a href="https://creativecommons.org/licenses/by-nc-sa/3.0/cn/deed.zh" target="_blank">CC BY-NC-SA 3.0 CN</a>
+    
+  </div>
+
+
+  
+  
+  <div class="nexmoe-post-meta nexmoe-rainbow">
+    
+    
+        <a class="nexmoefont icon-tag-fill -none-link" href="/tags/c/" rel="tag">c++</a> <a class="nexmoefont icon-tag-fill -none-link" href="/tags/net/" rel="tag">net</a>
+    
+</div>
+
+  <div class="nexmoe-post-footer">
+    <section class="nexmoe-comment">
+    <style>
+  #nexmoe-content .nexmoe-comment {
+    background-color: #fff;
+    border-top: 20px solid #f5f6f5;
+  }
+</style>
+<script
+  async
+  src="https://comments.app/js/widget.js?2"
+  data-comments-app-website="IeDW7IbG"
+  data-limit="5"
+  data-color=""
+  data-dislikes="0"
+  data-outlined="0"
+  data-colorful="1"
+></script>
+
+</section>
+  </div>
+</div>
+        <div class="nexmoe-post-right">
+          <div class="nexmoe-fixed">
+            <div class="nexmoe-tool"> 
+              
+                
+              
+              <a href="#nexmoe-content" class="toc-link" aria-label="回到顶部" title="top"><button class="mdui-fab mdui-ripple"><i class="nexmoefont icon-caret-top"></i></button></a>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/combine/npm/lazysizes@5.1.0/lazysizes.min.js,npm/mdui@0.4.3/dist/js/mdui.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+
+ 
+
+<script async src="/js/app.js?v=1642299064324"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+	$(".justified-gallery").justifiedGallery({
+		rowHeight: 160,
+		margins: 10,
+	});
+</script>
+
+
+  
+
+
+
+
+
+</body>
+
+</html>
