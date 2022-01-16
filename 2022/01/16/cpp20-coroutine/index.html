@@ -21,15 +21,15 @@
 <meta property="og:description" content="Implement minimal coroutine primitives with c++20">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-01-15T23:41:06.000Z">
-<meta property="article:modified_time" content="2022-01-16T02:11:42.886Z">
+<meta property="article:modified_time" content="2022-01-16T02:24:20.809Z">
 <meta property="article:author" content="@zephyr">
 <meta property="article:tag" content="c++">
 <meta property="article:tag" content="coroutine">
 <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/highlight.js@9.15.8/styles/atom-one-dark.css,npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css,gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css,npm/hexo-theme-nexmoe@latest/source/lib/mdui_043tiny/css/mdui.css,npm/hexo-theme-nexmoe@latest/source/lib/iconfont/iconfont.css?v=233" crossorigin>
-  <link rel="stylesheet" href="/css/style.css?v=1642299111945">
+  <link rel="stylesheet" href="/css/style.css?v=1642299879820">
   
-  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1642299111945">
+  <link rel="stylesheet" href="/lib/iconfont/iconfont.css?v=1642299879820">
 <meta name="generator" content="Hexo 5.4.0"></head>
 
 <body class="mdui-drawer-body-left">
@@ -195,14 +195,14 @@
     <p>Implement minimal coroutine primitives with c++20</p>
 <span id="more"></span>
 
-<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>Using callback style APIs is painful. Still, Lambda is not a good-enough solution. When deeply nested, it looks terrible. At the same time, objects’ lifetimes are hard to manage, even with the help of smart pointers and RAII. Look at the code below:<br>(BTW, Asio is a great library:))</p>
+<h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p>Using callback style APIs is painful. Still, Lambda is not a good-enough solution. When deeply nested, the code looks terrible and becomes hard to read. Objects’ lifetimes are also hard to manage, even with the help of smart pointers and RAII. Look at the code below:<br>(BTW, Asio is a great library:))</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    socket.<span class="built_in">read_some</span>(buffer, [socket, buffer](ec, read_n)&#123;</span><br><span class="line">        ...</span><br><span class="line">        socket.<span class="built_in">write_some</span>(buffer, [](ec, write_n)&#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>We have to pass shared_ptr(catched and saved in lambda struct) to keep objects alive, although they are obviously unique. Here the use of shared_ptr brings some overhead, to make things work correctly, we sacrificed performance.</p>
 <p>What about using coroutine:</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="keyword">auto</span> [ec, n] = <span class="keyword">co_await</span> socket.<span class="built_in">read_some</span>(buffer, use_awaitable);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> [ec, n] = <span class="keyword">co_await</span> socket.<span class="built_in">write_some</span>(buffer, use_awaitable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>The code is much more simplified. No more callback, no more shared_ptr.</p>
+<p>The code is much simplified. No more callback, no more shared_ptr.</p>
 <h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><p>Most language provides syntax like <code>async</code> <code>await</code>, very easy to use. As for C++, it provides more detailed control, and we need to implement almost everything on our own, or use third-party libraries. I have made a toy coroutine library yesterday, the purpose of this article is to introduce how coroutine works, and how to implement minimal primitives.</p>
 <p><strong>Coroutine is pre-allocated on heap, its data is stored in Task::promise_type. Task is a user-defined type, it must have a inner <code>promise_type</code>.</strong></p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Task</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Promise</span> &#123;</span></span><br><span class="line"></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">using</span> promise_type = Promise;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -317,7 +317,7 @@
 
  
 
-<script async src="/js/app.js?v=1642299111947"></script>
+<script async src="/js/app.js?v=1642299879821"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js"></script>
 <script>
